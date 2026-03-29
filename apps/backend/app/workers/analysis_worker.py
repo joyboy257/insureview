@@ -71,6 +71,24 @@ def run_portfolio_analysis(self, user_id: str, policy_ids: list[str]) -> dict:
                 record.output_data = output_data
                 await db.commit()
 
+        # Wire gap-alert email notification
+        if gaps and gaps.get("gaps"):
+            from app.core.database import async_session_maker
+            from sqlalchemy import select
+            from app.models.user import User
+            from app.workers.notification_worker import send_gap_alert_notification
+
+            async with async_session_maker() as db:
+                user_record = await db.execute(select(User).where(User.id == user_uuid))
+                user = user_record.scalar_one_or_none()
+                if user and user.email:
+                    send_gap_alert_notification.delay(
+                        user_id=user_id,
+                        user_email=user.email,
+                        gap_count=output_data["summary"]["total_gaps"],
+                        policy_count=len(policy_uuids) if policy_uuids else 0,
+                        gap_names=[g.get("coverage_type", "Unknown") for g in gaps.get("gaps", [])],
+                    )
         return output_data
 
     try:

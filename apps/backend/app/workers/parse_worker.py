@@ -29,6 +29,29 @@ def parse_policy_task(self, session_id: str) -> dict:
         result = asyncio.run(run_parsing_pipeline(session_id))
         logger.info(f"Parse task completed for session: {session_id}")
         return {"status": "completed", "policy_id": str(result)}
+        # Wire parse-complete email notification
+        from app.core.database import async_session_maker
+        from sqlalchemy import select
+        from app.models.session import ParsingSession
+        from app.models.user import User
+        from app.workers.notification_worker import send_parse_complete_notification
+
+        async with async_session_maker() as db:
+            session_record = await db.execute(
+                select(ParsingSession).where(ParsingSession.id == uuid.UUID(session_id))
+            )
+            parsed_session = session_record.scalar_one_or_none()
+            if parsed_session and parsed_session.user_id:
+                user_record = await db.execute(
+                    select(User).where(User.id == parsed_session.user_id)
+                )
+                user = user_record.scalar_one_or_none()
+                if user and user.email:
+                    send_parse_complete_notification.delay(
+                        session_id=session_id,
+                        user_email=user.email,
+                        filename=parsed_session.original_filename or "policy document",
+                    )
     except Exception as exc:
         logger.exception(f"Parse task failed for session: {session_id}")
         raise self.retry(exc=exc, countdown=60)
