@@ -22,6 +22,7 @@ import { ConflictAlerts } from "@/components/dashboard/ConflictAlerts";
 import { ScenarioBuilder } from "@/components/dashboard/ScenarioBuilder";
 import { MASDisclaimer } from "@/components/dashboard/MASDisclaimer";
 import { DisclaimerBanner } from "@/components/ui/DisclaimerBanner";
+import { GettingStartedGuide } from "@/components/dashboard/GettingStartedGuide";
 import { usePortfolio } from "@/hooks/usePortfolio";
 
 const tabs = [
@@ -41,6 +42,7 @@ function formatCents(cents: number): string {
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [guideDismissed, setGuideDismissed] = useState(false);
   const { data: policies, isLoading, error } = usePortfolio();
 
   const isEmpty = !isLoading && (!policies || policies.length === 0);
@@ -72,19 +74,26 @@ export default function DashboardPage() {
       </div>
 
       {isEmpty && !isLoading ? (
-        <Card className="py-16 text-center">
-          <CardContent>
-            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold mb-2">No policies yet</h2>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Upload your first insurance policy PDF to get an instant analysis of your coverage.
-              We support term life, whole life, critical illness, hospitalisation, and more.
-            </p>
-            <Link href="/upload">
-              <Button size="lg">Upload Your First Policy</Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <>
+          <Card className="py-12 text-center">
+            <CardContent>
+              <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h2 className="text-xl font-semibold mb-2">No policies yet</h2>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Upload your first insurance policy PDF to get an instant analysis of your coverage.
+                We support term life, whole life, critical illness, hospitalisation, and more.
+              </p>
+              <Link href="/upload">
+                <Button size="lg">Upload Your First Policy</Button>
+              </Link>
+            </CardContent>
+          </Card>
+          {!guideDismissed && (
+            <div className="mt-6">
+              <GettingStartedGuide dismissed={guideDismissed} onDismiss={() => setGuideDismissed(true)} />
+            </div>
+          )}
+        </>
       ) : (
         <>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
