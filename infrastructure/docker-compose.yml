@@ -38,7 +38,6 @@ services:
       DEFAULT_REGION: ap-southeast-1
       AWS_ACCESS_KEY_ID: localstack_key
       AWS_SECRET_ACCESS_KEY: localstack_secret
-      DOCKER_HOST: tcp://127.0.0.1:2375
     ports:
       - "4566:4566"
     volumes:
@@ -49,6 +48,106 @@ services:
       interval: 15s
       timeout: 10s
       retries: 5
+
+  backend:
+    build:
+      context: ../apps/backend
+      dockerfile: Dockerfile
+    container_name: insurance_backend
+    ports:
+      - "8000:8000"
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql+asyncpg://insurance_user:insurance_pass@postgres:5432/insurance_portfolio
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      S3_ENDPOINT_URL: http://localstack:4566
+      S3_ACCESS_KEY: localstack_key
+      S3_SECRET_KEY: localstack_secret
+      S3_BUCKET_NAME: policy-documents
+      S3_REGION: ap-southeast-1
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: change-me-in-production-use-32-char-secret
+      FRONTEND_URL: http://localhost:3000
+      EMAIL_SERVER_HOST: ${EMAIL_SERVER_HOST:-smtp.postmarkapp.com}
+      EMAIL_SERVER_PORT: ${EMAIL_SERVER_PORT:-587}
+      EMAIL_SERVER_USER: ${EMAIL_SERVER_USER:-}
+      EMAIL_SERVER_PASS: ${EMAIL_SERVER_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@insureview.sg}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  celery_parse:
+    build:
+      context: ../apps/backend
+      dockerfile: Dockerfile
+    container_name: insurance_celery_parse
+    command: celery -A app.workers.parse_worker:celery_app worker --hostname=parse@%h --queues=parse_queue --loglevel=INFO
+    environment:
+      DATABASE_URL: postgresql+asyncpg://insurance_user:insurance_pass@postgres:5432/insurance_portfolio
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      S3_ENDPOINT_URL: http://localstack:4566
+      S3_ACCESS_KEY: localstack_key
+      S3_SECRET_KEY: localstack_secret
+      S3_BUCKET_NAME: policy-documents
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+
+  celery_analysis:
+    build:
+      context: ../apps/backend
+      dockerfile: Dockerfile
+    container_name: insurance_celery_analysis
+    command: celery -A app.workers.analysis_worker:celery_app worker --hostname=analysis@%h --queues=analysis_queue --loglevel=INFO
+    environment:
+      DATABASE_URL: postgresql+asyncpg://insurance_user:insurance_pass@postgres:5432/insurance_portfolio
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: apps/frontend/Dockerfile
+    container_name: insurance_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: change-me-in-production-use-32-char-secret
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      DATABASE_URL: postgresql://insurance_user:insurance_pass@postgres:5432/insurance_portfolio
+      EMAIL_SERVER_HOST: ${EMAIL_SERVER_HOST:-smtp.postmarkapp.com}
+      EMAIL_SERVER_PORT: ${EMAIL_SERVER_PORT:-587}
+      EMAIL_SERVER_USER: ${EMAIL_SERVER_USER:-}
+      EMAIL_SERVER_PASS: ${EMAIL_SERVER_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@insureview.sg}
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
