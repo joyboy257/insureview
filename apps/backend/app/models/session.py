@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Integer, BigInteger, DateTime, Text, ForeignKey, Index
+from sqlalchemy import String, Integer, BigInteger, DateTime, Text, ForeignKey, Index, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -37,8 +37,8 @@ class AnalysisResult(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     analysis_type: Mapped[str] = mapped_column(String(50), nullable=False)
     trigger: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    input_payload: Mapped[dict | None] = mapped_column(default=dict)
-    output_data: Mapped[dict] = mapped_column(default=dict)
+    input_payload: Mapped[dict | None] = mapped_column(JSON, nullable=True, default=dict)
+    output_data: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     plain_english_narrative: Mapped[str | None] = mapped_column(Text, nullable=True)
     mas_disclaimer_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default="now()")

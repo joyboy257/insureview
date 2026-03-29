@@ -1,39 +1,57 @@
 import NextAuth from "next-auth";
-import type { NextAuthConfig } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import EmailProvider from "next-auth/providers/email";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { PrismaClient } from "@prisma/client";
+import { sendMagicLinkEmail } from "@/lib/email";
 
-export const authConfig: NextAuthConfig = {
+const prisma = new PrismaClient();
+
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
       server: {
         host: process.env.EMAIL_SERVER_HOST,
-        port: Number(process.env.EMAIL_SERVER_PORT),
+        port: Number(process.env.EMAIL_SERVER_PORT || 587),
         auth: {
           user: process.env.EMAIL_SERVER_USER,
           pass: process.env.EMAIL_SERVER_PASS,
         },
       },
       from: process.env.EMAIL_FROM,
+      sendVerificationRequest({ identifier, url }) {
+        if (process.env.NODE_ENV === "development" || !process.env.EMAIL_SERVER_USER) {
+          console.log(`\n📧 Magic link for ${identifier}: ${url}\n`);
+          return;
+        }
+        return sendMagicLinkEmail(identifier, url);
+      },
     }),
   ],
   pages: {
     signIn: "/login",
     verifyRequest: "/verify",
+    error: "/login",
   },
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnApp = nextUrl.pathname.startsWith("/dashboard") ||
-        nextUrl.pathname.startsWith("/upload") ||
-        nextUrl.pathname.startsWith("/settings") ||
-        nextUrl.pathname.startsWith("/policies");
-      if (isOnApp) {
-        return isLoggedIn;
+    async jwt({ token, user }) {
+      if (user) {
+        token.email = user.email;
+        token.id = user.id;
       }
-      return true;
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.email = token.email as string;
+        (session.user as { id?: string }).id = token.id as string;
+      }
+      return session;
     },
   },
   session: { strategy: "jwt" },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
-export const { handlers } = NextAuth(authConfig);
+export default NextAuth(authOptions);

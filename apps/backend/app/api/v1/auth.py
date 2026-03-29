@@ -33,8 +33,23 @@ async def request_magic_link(
     user.magic_link_expires_at = datetime.now(timezone.utc) + timedelta(minutes=15)
     await db.commit()
 
-    magic_link = f"{'http://localhost:3000'}/api/auth/callback?token={token}"
+    magic_link = f"{'http://localhost:3000'}/api/auth/callback/credentials?token={token}"
     return {"message": "Magic link sent", "magic_link": magic_link}
+
+
+@router.post("/verify-magic-link")
+async def verify_magic_link(token: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).where(User.magic_link_token == token))
+    user = result.scalar_one_or_none()
+    if not user or not user.magic_link_expires_at:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    if datetime.now(timezone.utc) > user.magic_link_expires_at:
+        raise HTTPException(status_code=401, detail="Token expired")
+    # Clear token after use
+    user.magic_link_token = None
+    user.magic_link_expires_at = None
+    await db.commit()
+    return {"id": str(user.id), "email": user.email, "full_name": user.full_name}
 
 
 @router.get("/me")

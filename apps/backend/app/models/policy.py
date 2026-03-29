@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy import String, Integer, BigInteger, Float, Date, DateTime, Text, ForeignKey, Index
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -17,8 +19,8 @@ class Policy(Base):
     product_name: Mapped[str] = mapped_column(String(255), nullable=False)
     product_type: Mapped[str] = mapped_column(String(50), nullable=False)
     policy_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    issue_date: Mapped[datetime.date | None] = mapped_column(Date, nullable=True)
-    expiry_date: Mapped[datetime.date | None] = mapped_column(Date, nullable=True)
+    issue_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    expiry_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     sum_assured_cents: Mapped[int] = mapped_column(BigInteger, nullable=False, default=0)
     premium_amount_cents: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     premium_frequency: Mapped[str] = mapped_column(String(20), nullable=False, default="annual")
