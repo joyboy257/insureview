@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/layout/Providers";
+import { MASDisclaimer } from "@/components/MASDisclaimer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,7 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <div className="fixed bottom-0 left-0 right-0 z-50">
+            <MASDisclaimer />
+          </div>
+          {children}
+        </Providers>
       </body>
     </html>
   );

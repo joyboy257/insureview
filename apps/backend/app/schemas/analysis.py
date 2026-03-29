@@ -7,11 +7,21 @@ class AnalysisRequest(BaseModel):
     policy_ids: list[UUID] | None = None
 
 
+class OverlappingPolicySchema(BaseModel):
+    policy_id: str
+    product_name: str
+    insurer: str
+    sum_assured_cents: int
+
+
 class CoverageGapSchema(BaseModel):
     coverage_type: str
     severity: str
     description: str
+    recommendation: str | None = None
     current_amount_cents: int | None = None
+    gap_amount_cents: int | None = None
+    covered_by_policy_ids: list[str] = []
     benchmark_amount: str | None = None
     benchmark_source: str | None = None
     user_specific_note: str | None = None
@@ -19,29 +29,41 @@ class CoverageGapSchema(BaseModel):
 
 
 class PolicyOverlapSchema(BaseModel):
-    overlap_type: str
-    policies_involved: list[str]
-    benefit_ids: list[str]
     coverage_type: str
-    total_overlapping_amount_cents: int
-    interaction_description: str
+    severity: str
+    overlapping_policies: list[OverlappingPolicySchema]
+    policy_count: int
+    total_sum_assured_cents: int
+    note: str
+    overlap_type: str | None = None
+    policies_involved: list[str] = []
+    benefit_ids: list[str] = []
+    interaction_description: str | None = None
     payout_order_note: str | None = None
     waste_estimate_cents: int | None = None
-    conflict_flag: bool
+    conflict_flag: bool = False
+
+
+class AffectedPolicySchema(BaseModel):
+    policy_id: str
+    product_name: str
+    insurer: str
+    detail: dict | None = None
 
 
 class PolicyConflictSchema(BaseModel):
-    conflict_id: str
     conflict_type: str
-    policies_involved: list[str]
-    benefit_ids: list[str]
     severity: str
-    conflict_description: str
-    policy_a_term: str
-    policy_b_term: str
-    resolution_note: str
-    plain_english_explanation: str
-    action_required: str
+    description: str
+    affected_policies: list[AffectedPolicySchema]
+    resolution_hint: str
+    conflict_id: str | None = None
+    policies_involved: list[str] = []
+    benefit_ids: list[str] = []
+    policy_a_term: str | None = None
+    policy_b_term: str | None = None
+    plain_english_explanation: str | None = None
+    action_required: str | None = None
 
 
 class ScenarioPayoutItem(BaseModel):

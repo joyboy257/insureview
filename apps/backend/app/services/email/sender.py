@@ -61,6 +61,9 @@ PARSE_COMPLETE_TEMPLATE = """
     <h1 style="color: white; margin: 0; font-size: 20px;">Insureview</h1>
   </div>
   <div style="border: 1px solid hsl(214.3,31.8%,91.4%); border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
+    <div style="background: hsl(48,92%,95%); border: 1px solid hsl(48,92%,80%); border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: hsl(35,90%,20%);">
+      <strong>Important:</strong> This service is an informational tool only. It is not regulated by the Monetary Authority of Singapore (MAS) as a financial advisory service. Nothing on this site constitutes financial advice.
+    </div>
     <h2 style="color: hsl(222.2,84%,4.9%); margin-top: 0;">Your policy has been parsed</h2>
     <p style="color: hsl(215.4,16.3%,46.9%);">Great news — <strong>{filename}</strong> has been successfully analyzed.</p>
     <p style="color: hsl(215.4,16.3%,46.9%);">You can now view your full portfolio analysis on Insureview.</p>
@@ -82,6 +85,9 @@ GAP_DETECTED_TEMPLATE = """
     <h1 style="color: white; margin: 0; font-size: 20px;">Insureview</h1>
   </div>
   <div style="border: 1px solid hsl(214.3,31.8%,91.4%); border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
+    <div style="background: hsl(48,92%,95%); border: 1px solid hsl(48,92%,80%); border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: hsl(35,90%,20%);">
+      <strong>Important:</strong> This service is an informational tool only. It is not regulated by the Monetary Authority of Singapore (MAS) as a financial advisory service. Nothing on this site constitutes financial advice.
+    </div>
     <h2 style="color: hsl(222.2,84%,4.9%); margin-top: 0;">New gap detected in your portfolio</h2>
     <p style="color: hsl(215.4,16.3%,46.9%);">We found <strong>{gap_count} new coverage gap{gap_plural}</strong> in your portfolio after analyzing {policy_count} policy{policy_plural}.</p>
     <ul style="color: hsl(215.4,16.3%,46.9%);">

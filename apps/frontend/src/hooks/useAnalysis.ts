@@ -5,57 +5,62 @@ export interface Gap {
   coverage_type: string;
   severity: string;
   description: string;
-  recommendation?: string;
+  recommendation?: string | null;
   covered_by_policy_ids: string[];
   gap_amount_cents: number | null;
+  current_amount_cents?: number | null;
+}
+
+export interface OverlappingPolicy {
+  policy_id: string;
+  product_name: string;
+  insurer: string;
+  sum_assured_cents: number;
 }
 
 export interface Overlap {
   coverage_type: string;
   severity: string;
-  overlapping_policies: Array<{
-    policy_id: string;
-    product_name: string;
-    insurer: string;
-    sum_assured_cents: number;
-  }>;
+  overlapping_policies: OverlappingPolicy[];
   policy_count: number;
   total_sum_assured_cents: number;
   note: string;
+}
+
+export interface AffectedPolicy {
+  policy_id: string;
+  product_name: string;
+  insurer: string;
+  detail?: Record<string, unknown>;
 }
 
 export interface Conflict {
   conflict_type: string;
   severity: string;
   description: string;
-  affected_policies: Array<{
-    policy_id: string;
-    product_name: string;
-    insurer: string;
-    detail?: Record<string, unknown>;
-  }>;
-  detail: Record<string, unknown>;
+  affected_policies: AffectedPolicy[];
   resolution_hint: string;
 }
 
-export interface AnalysisResult {
+export interface AnalysisData {
   gaps: Gap[];
   overlaps: Overlap[];
   conflicts: Conflict[];
-  summary: {
-    total_gaps: number;
-    critical_gaps: number;
-    warning_gaps: number;
-    total_overlaps: number;
-    warning_overlaps: number;
-    total_conflicts: number;
-    critical_conflicts: number;
-  };
+  plain_english_summary: string;
 }
 
-async function fetchLatestAnalysis(): Promise<AnalysisResult | null> {
-  const { data } = await api.get<AnalysisResult | null>("/analysis");
-  return data;
+/** Shape returned by GET /api/v1/analysis */
+interface AnalysisApiResponse {
+  data: AnalysisData;
+  mas_disclaimer: string;
+  generated_at: string;
+  disclaimer_version: string;
+}
+
+async function fetchLatestAnalysis(): Promise<AnalysisData | null> {
+  const { data: response } = await api.get<AnalysisApiResponse>("/analysis");
+  // API returns { data: { gaps, overlaps, conflicts }, ... }
+  return response?.data ?? null;
 }
 
 async function runAnalysis(policyIds?: string[]): Promise<{ id: string }> {
@@ -66,7 +71,7 @@ async function runAnalysis(policyIds?: string[]): Promise<{ id: string }> {
 }
 
 export function useAnalysis() {
-  const query = useQuery<AnalysisResult | null>({
+  const query = useQuery<AnalysisData | null>({
     queryKey: ["analysis"],
     queryFn: fetchLatestAnalysis,
     staleTime: 1000 * 60, // 1 minute
@@ -75,7 +80,6 @@ export function useAnalysis() {
   const mutation = useMutation({
     mutationFn: runAnalysis,
     onSuccess: () => {
-      // Refetch analysis after running
       query.refetch();
     },
   });
