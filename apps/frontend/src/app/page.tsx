@@ -80,16 +80,16 @@ export default function LandingPage() {
               Upload your Singapore insurance policies. Get an instant analysis of
               coverage gaps, overlaps, and conflicts across your portfolio.
             </p>
-            <div className="flex justify-center gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-3 mb-4">
               <Link href="/upload">
                 <Button size="lg">
                   Upload Your Policies
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/dashboard">
+              <Link href="/login">
                 <Button size="lg" variant="outline">
-                  View Sample Dashboard
+                  Try Demo — No Account Needed
                 </Button>
               </Link>
             </div>

@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import hash_email
+from app.core.security import hash_email, create_access_token
 from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.models.session import ConsentRecord
@@ -59,6 +59,38 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "email": current_user.email,
         "full_name": current_user.full_name,
         "agreed_to_pdpa_at": current_user.agreed_to_pdpa_at,
+    }
+
+
+DEMO_USER_IDS = {
+    "sarah": uuid.UUID("11111111-1111-1111-1111-111111111111"),
+    "ravi": uuid.UUID("22222222-2222-2222-2222-222222222222"),
+}
+
+
+@router.post("/demo-login/{demo_user}")
+async def demo_login(
+    demo_user: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Bypass email verification for demo users. Returns a JWT directly."""
+    user_id = DEMO_USER_IDS.get(demo_user.lower())
+    if not user_id:
+        raise HTTPException(status_code=404, detail="Demo user not found")
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Demo user not seeded")
+
+    token = create_access_token({"sub": str(user.id)})
+    return {
+        "token": token,
+        "user": {
+            "id": str(user.id),
+            "email": user.email,
+            "full_name": user.full_name,
+        },
     }
 
 

@@ -262,9 +262,9 @@ export default function PoliciesPage() {
         </Card>
       )}
 
-      {/* Table */}
+      {/* Table — desktop */}
       {!isLoading && !error && filtered.length > 0 && (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="hidden md:block border rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-muted/50 border-b">
@@ -367,6 +367,51 @@ export default function PoliciesPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Card list — mobile */}
+      {!isLoading && !error && filtered.length > 0 && (
+        <div className="md:hidden space-y-3">
+          {filtered.map((policy) => (
+            <Card
+              key={policy.id}
+              className="hover:border-primary/50 transition-colors cursor-pointer"
+              onClick={() => router.push(`/policy/${policy.id}`)}
+            >
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-semibold">{policy.productName}</p>
+                    <p className="text-sm text-muted-foreground">{policy.insurerName}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-semibold">{formatCents(policy.sumAssuredCents)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {policy.premiumAmountCents != null
+                        ? `${formatCents(policy.premiumAmountCents)}/${policy.premiumFrequency}`
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant={STATUS_VARIANTS[policy.policyStatus] ?? "secondary"}>
+                    {policy.policyStatus.charAt(0).toUpperCase() + policy.policyStatus.slice(1)}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {PRODUCT_TYPE_LABELS[policy.productType] ?? policy.productType}
+                  </span>
+                  {policy.expiryDate && (
+                    <span className="text-xs text-muted-foreground">Exp {policy.expiryDate}</span>
+                  )}
+                  <span className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
+                    {formatConfidence(policy.parseConfidence)}
+                    <Progress value={policy.parseConfidence * 100} className="h-1 w-12" />
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>

@@ -49,11 +49,11 @@ export default function DashboardPage() {
   const uniqueInsurers = new Set(policies?.map((p) => p.insurerCode)).size ?? 0;
 
   return (
-    <div className="container py-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="container py-6 md:py-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 md:mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Your Insurance Portfolio</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold">Your Insurance Portfolio</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">
             {isLoading ? (
               <span className="flex items-center gap-1">
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -66,7 +66,7 @@ export default function DashboardPage() {
             )}
           </p>
         </div>
-        <Link href="/upload">
+        <Link href="/upload" className="shrink-0">
           <Button>Add More Policies</Button>
         </Link>
       </div>
@@ -87,12 +87,12 @@ export default function DashboardPage() {
         </Card>
       ) : (
         <>
-          <div className="grid lg:grid-cols-4 gap-6 mb-8">
-            {/* Sum Assured — dominant metric, spans 2 columns with teal tint */}
-            <Card className="lg:col-span-2 bg-primary/5 border-primary/20">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+            {/* Sum Assured — dominant metric, spans 2 columns on large screens */}
+            <Card className="sm:col-span-2 bg-primary/5 border-primary/20">
               <CardContent className="pt-5">
                 <p className="text-sm font-medium text-primary mb-1">Total Sum Assured</p>
-                <p className="text-4xl font-bold tracking-tight">
+                <p className="text-3xl md:text-4xl font-bold tracking-tight">
                   {isLoading ? "—" : formatCents(totalSumAssured)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">SGD · across {uniqueInsurers} insurer{uniqueInsurers === 1 ? "" : "s"}</p>
@@ -102,7 +102,7 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="pt-5">
                 <p className="text-sm font-medium text-muted-foreground mb-1">Policies</p>
-                <p className="text-4xl font-bold tracking-tight">
+                <p className="text-3xl md:text-4xl font-bold tracking-tight">
                   {isLoading ? "—" : policies!.length}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">active in portfolio</p>
@@ -112,7 +112,7 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="pt-5">
                 <p className="text-sm font-medium text-muted-foreground mb-1">Annual Premium</p>
-                <p className="text-4xl font-bold tracking-tight">
+                <p className="text-3xl md:text-4xl font-bold tracking-tight">
                   {isLoading
                     ? "—"
                     : formatCents(

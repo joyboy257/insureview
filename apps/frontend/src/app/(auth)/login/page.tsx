@@ -3,15 +3,31 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { ShieldCheck, Mail, ArrowRight, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ShieldCheck, Mail, ArrowRight, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 
+const DEMO_USERS = [
+  {
+    id: "sarah",
+    name: "Sarah Chen",
+    description: "5 policies — whole life, term, endowment, hospitalisation",
+  },
+  {
+    id: "ravi",
+    name: "Ravi Kumar",
+    description: "5 policies — whole life, term, hospitalisation, investment-linked",
+  },
+];
+
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -34,6 +50,29 @@ export default function LoginPage() {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDemoLogin(demoUserId: string) {
+    setDemoLoading(demoUserId);
+    setError(null);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/demo-login/${demoUserId}`,
+        { method: "POST" }
+      );
+      if (!res.ok) throw new Error("Demo login failed");
+      const data = await res.json();
+      localStorage.setItem("session_token", data.token);
+      await signIn("credentials", {
+        token: data.token,
+        redirect: false,
+      });
+      router.push("/dashboard");
+    } catch {
+      setError("Demo login failed. Make sure the backend is running.");
+    } finally {
+      setDemoLoading(null);
     }
   }
 
@@ -88,61 +127,107 @@ export default function LoginPage() {
 
       {/* Login form */}
       <div className="flex-1 flex items-center justify-center px-4 py-16 bg-slate-50">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl">Sign in</CardTitle>
-            <CardDescription>
-              Enter your email to receive a magic link. No password needed.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium">
-                  Email address
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoFocus
-                  autoComplete="email"
-                  disabled={loading}
-                />
+        <div className="w-full max-w-md space-y-6">
+          {/* Demo login section */}
+          <Card className="border-amber-200 bg-amber-50">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-amber-700" />
+                <CardTitle className="text-base text-amber-900">Try without an account</CardTitle>
               </div>
+              <CardDescription className="text-amber-700 text-xs">
+                Explore with sample insurance data — no email required
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {DEMO_USERS.map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => handleDemoLogin(user.id)}
+                  disabled={!!demoLoading}
+                  className="w-full text-left px-3 py-2.5 rounded-md border border-amber-200 bg-white hover:bg-amber-100 transition-colors disabled:opacity-50 flex items-center justify-between"
+                >
+                  <div>
+                    <div className="text-sm font-medium text-amber-900">{user.name}</div>
+                    <div className="text-xs text-amber-700">{user.description}</div>
+                  </div>
+                  {demoLoading === user.id ? (
+                    <Loader2 className="h-4 w-4 text-amber-600 animate-spin" />
+                  ) : (
+                    <ArrowRight className="h-4 w-4 text-amber-600" />
+                  )}
+                </button>
+              ))}
+            </CardContent>
+          </Card>
 
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
-              )}
-
-              <Button type="submit" className="w-full" disabled={loading || !email.trim()}>
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending link...
-                  </>
-                ) : (
-                  <>
-                    Send magic link
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </>
-                )}
-              </Button>
-            </form>
-
-            <div className="mt-6 pt-6 border-t text-center">
-              <p className="text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
-                <span className="text-foreground font-medium">
-                  Just enter your email above — you&apos;ll be signed up automatically.
-                </span>
-              </p>
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t" />
             </div>
-          </CardContent>
-        </Card>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-slate-50 px-2 text-muted-foreground">or continue with email</span>
+            </div>
+          </div>
+
+          {/* Magic link form */}
+          <Card>
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl">Sign in</CardTitle>
+              <CardDescription>
+                Enter your email to receive a magic link. No password needed.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="email" className="text-sm font-medium">
+                    Email address
+                  </label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoFocus
+                    autoComplete="email"
+                    disabled={loading}
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-sm text-destructive">{error}</p>
+                )}
+
+                <Button type="submit" className="w-full" disabled={loading || !email.trim()}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending link...
+                    </>
+                  ) : (
+                    <>
+                      Send magic link
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              <div className="mt-6 pt-6 border-t text-center">
+                <p className="text-sm text-muted-foreground">
+                  Don&apos;t have an account?{" "}
+                  <span className="text-foreground font-medium">
+                    Just enter your email above — you&apos;ll be signed up automatically.
+                  </span>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
