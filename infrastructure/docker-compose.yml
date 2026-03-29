@@ -1,0 +1,56 @@
+name: insurance-portfolio
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: insurance_postgres
+    environment:
+      POSTGRES_DB: insurance_portfolio
+      POSTGRES_USER: insurance_user
+      POSTGRES_PASSWORD: insurance_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U insurance_user -d insurance_portfolio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: insurance_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: insurance_localstack
+    environment:
+      SERVICES: s3
+      DEFAULT_REGION: ap-southeast-1
+      AWS_ACCESS_KEY_ID: localstack_key
+      AWS_SECRET_ACCESS_KEY: localstack_secret
+      DOCKER_HOST: tcp://127.0.0.1:2375
+    ports:
+      - "4566:4566"
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+  localstack_data:

@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InsurancePolicy",
+  "description": "Canonical schema for a parsed Singapore insurance policy",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["insurer_code", "insurer_name", "product_name", "product_type", "structured_data"],
+  "properties": {
+    "insurer_code": {
+      "type": "string",
+      "enum": ["AIA", "GE", "PRU", "NTUC", "MANULIFE", "AVIVA", "TIER", "OTHER"],
+      "description": "Standardised insurer code"
+    },
+    "insurer_name": { "type": "string" },
+    "product_name": { "type": "string" },
+    "product_type": {
+      "type": "string",
+      "enum": ["TERM_LIFE", "WHOLE_LIFE", "CRITICAL_ILLNESS", "HOSPITALISATION", "MEDISHIELD_LIFE", "IP", "DISABILITY", "ACCIDENT", "ENDOWMENT"],
+      "description": "Canonical product type"
+    },
+    "policy_number": { "type": ["string", "null"] },
+    "issue_date": { "type": ["string", "null"], "format": "date" },
+    "expiry_date": { "type": ["string", "null"], "format": "date" },
+    "sum_assured_cents": { "type": "integer", "minimum": 0 },
+    "premium_amount_cents": { "type": ["integer", "null"] },
+    "premium_frequency": { "type": "string", "enum": ["annual", "monthly", "quarterly"] },
+    "currency": { "type": "string", "default": "SGD" },
+    "policy_status": { "type": "string", "enum": ["active", "lapsed", "surrendered", "reduced"] },
+    "policy_year": { "type": ["integer", "null"] },
+    "parse_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "structured_data": {
+      "type": "object",
+      "required": ["benefits"],
+      "properties": {
+        "benefits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["benefit_type", "trigger_description"],
+            "properties": {
+              "benefit_type": { "type": "string" },
+              "benefit_subtype": { "type": ["string", "null"] },
+              "trigger_description": { "type": "string" },
+              "payout_type": { "type": "string" },
+              "amount_cents": { "type": ["integer", "null"] },
+              "percentage_of_sum_assured": { "type": ["number", "null"] },
+              "survival_period_days": { "type": ["integer", "null"] },
+              "conditions": { "type": ["object", "null"] },
+              "exclusions": { "type": ["array", "null"] },
+              "is_active": { "type": "boolean" },
+              "parse_confidence": { "type": "number" }
+            }
+          }
+        },
+        "riders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rider_name": { "type": "string" },
+              "rider_type": { "type": "string" },
+              "additional_premium_cents": { "type": ["integer", "null"] },
+              "additional_sum_assured_cents": { "type": ["integer", "null"] }
+            }
+          }
+        }
+      }
+    },
+    "plain_english_summary": { "type": ["string", "null"] }
+  }
+}

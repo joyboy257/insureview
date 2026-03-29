@@ -1,0 +1,23 @@
+{
+  "name": "intent-economy",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "pnpm --parallel --recursive dev",
+    "build": "pnpm --recursive build",
+    "lint": "pnpm --recursive lint",
+    "test": "pnpm --recursive test",
+    "typecheck": "pnpm --recursive typecheck",
+    "db:migrate": "pnpm --filter @insurance/backend db:migrate",
+    "db:reset": "pnpm --filter @insurance/backend db:reset"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}
