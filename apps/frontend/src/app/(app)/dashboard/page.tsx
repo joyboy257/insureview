@@ -87,41 +87,32 @@ export default function DashboardPage() {
         </Card>
       ) : (
         <>
-          <div className="grid lg:grid-cols-3 gap-6 mb-8">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Policies
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{isLoading ? "—" : policies!.length}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {uniqueInsurers} insurer{uniqueInsurers === 1 ? "" : "s"}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Sum Assured
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">
+          <div className="grid lg:grid-cols-4 gap-6 mb-8">
+            {/* Sum Assured — dominant metric, spans 2 columns with teal tint */}
+            <Card className="lg:col-span-2 bg-primary/5 border-primary/20">
+              <CardContent className="pt-5">
+                <p className="text-sm font-medium text-primary mb-1">Total Sum Assured</p>
+                <p className="text-4xl font-bold tracking-tight">
                   {isLoading ? "—" : formatCents(totalSumAssured)}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">SGD</p>
+                <p className="text-xs text-muted-foreground mt-1">SGD · across {uniqueInsurers} insurer{uniqueInsurers === 1 ? "" : "s"}</p>
               </CardContent>
             </Card>
+            {/* Policies count */}
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Annual Premium
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">
+              <CardContent className="pt-5">
+                <p className="text-sm font-medium text-muted-foreground mb-1">Policies</p>
+                <p className="text-4xl font-bold tracking-tight">
+                  {isLoading ? "—" : policies!.length}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">active in portfolio</p>
+              </CardContent>
+            </Card>
+            {/* Annual premium */}
+            <Card>
+              <CardContent className="pt-5">
+                <p className="text-sm font-medium text-muted-foreground mb-1">Annual Premium</p>
+                <p className="text-4xl font-bold tracking-tight">
                   {isLoading
                     ? "—"
                     : formatCents(

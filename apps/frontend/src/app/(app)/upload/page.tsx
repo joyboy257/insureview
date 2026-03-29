@@ -189,23 +189,30 @@ export default function UploadPage() {
 
       <div
         {...getRootProps()}
-        className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors ${
+        className={`border-2 rounded-xl p-10 text-center cursor-pointer transition-all ${
           isDragActive
-            ? "border-primary bg-primary/5"
-            : "border-muted-foreground/25 hover:border-primary/50"
+            ? "border-primary bg-primary/5 scale-[1.01]"
+            : "border-primary/30 hover:border-primary/60 bg-white"
         } ${!consentGiven ? "opacity-50 pointer-events-none" : ""}`}
       >
         <input {...getInputProps()} />
-        <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-        <p className="text-lg font-medium mb-1">
-          {isDragActive ? "Drop your PDFs here" : "Drag & drop policy PDFs here"}
-        </p>
-        <p className="text-sm text-muted-foreground mb-4">
-          or click to browse &mdash; PDF only, up to 50MB each, max 10 files
-        </p>
-        <Button variant="outline" size="sm">
-          Browse Files
-        </Button>
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Upload className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <p className="text-base font-medium">
+              {isDragActive ? "Drop your PDFs here" : "Drag & drop your policy PDFs"}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              or{" "}
+              <span className="text-primary font-medium underline underline-offset-2 cursor-pointer">
+                click to browse
+              </span>{" "}
+              &mdash; PDF only, up to 50 MB each, max 10 files
+            </p>
+          </div>
+        </div>
       </div>
 
       {files.length > 0 && (

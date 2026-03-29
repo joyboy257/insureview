@@ -97,7 +97,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="py-16 bg-slate-50">
+        <section className="py-16">
           <div className="container">
             <div className="grid md:grid-cols-3 gap-8">
               <Card>
