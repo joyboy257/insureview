@@ -33,15 +33,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     ? pathname === "/dashboard" || pathname.startsWith("/dashboard/")
                     : pathname.startsWith(item.href);
                 return (
-                  <Link key={item.href} href={item.href}>
-                    <Button
-                      variant={isActive ? "secondary" : "ghost"}
-                      size="sm"
-                      className={cn("gap-2", isActive && "bg-primary/10 text-primary")}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      {item.label}
-                    </Button>
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
                   </Link>
                 );
               })}
